@@ -1,0 +1,21 @@
+﻿宏观变量代码,宏观变量名,raw_data_type,权重,factor_type,freq,api,unti
+CBA00652.CS,中债-国债总净价(7-10年)指数,价格,,growth,月,edb,亿千瓦时
+HSI.HI,恒生指数,价格,,growth,月,edb,万吨
+NH0012.NHF,南华沪铜指数,价格,,growth,月,edb,万吨
+CRBRI.RB,CRB工业现货,价格,,growth,月,edb,万吨
+NH0056.NHF,南华生猪指数,价格,,cpi inflation,月,edb,万台
+S0066840,中国:大宗价:猪肉,价格,,cpi inflation,月,edb,万辆
+S5065106,中国:平均批发价:猪肉,价格,,cpi inflation,月,edb,台
+B00.IPE,ICE布油连续,价格,,ppi inflation,月,edb,万平方米
+NH0016.NHF,南华螺纹钢指数,价格,,ppi inflation,月,edb,亿元
+NH0030.NHF,南华动力煤指数,价格,,ppi inflation,月,edb,亿吨公里
+CBA00621.CS,中债-国债总财富(1-3年)指数,价格,,risk free rate,,,
+H11025.CSI,货币基金,价格,,risk free rate,月,edb,%
+CBA04021.CS,中债-企业债AA财富(1-3年)指数,价格,1,credit spread,月,edb,%
+CBA02521.CS,中债-国开行债券总财富(1-3年)指数,价格,-1,credit spread,月,edb,元/千克
+CBA00651.CS,中债-国债总财富(7-10年)指数,价格,1,term spread,,,
+CBA00621.CS,中债-国债总财富(1-3年)指数,价格,-1,term spread,日,edb,
+H30355.CSI,中证800成长,价格,1,term spread,周,edb,1994年4月=100
+H30356.CSI,中证800价值,价格,-1,term spread,日,edb,美元/桶
+AU9999.SGE,SGE黄金9999,价格,1,exchange rate,日,edb,点
+SPTAUUSDOZ.IDC,伦敦金现,价格,-1,exchange rate,日,edb,美元/吨
