@@ -62,3 +62,6 @@ ETFs are used purely as implementation instruments rather than investment target
 (这里可以贴一张你回测生成的净值曲线图)
 * **Sharpe Ratio:** X.X
 * **Max Drawdown:** XX%
+
+Detailed backtesting results and robustness analysis are included in the research notebooks
+and are available for discussion during interviews.
