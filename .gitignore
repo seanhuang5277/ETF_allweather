@@ -3,3 +3,18 @@
 __pycache__/
 *.pyc
 .ipynb_checkpoints/
+logs/
+# =========================
+# Logs & outputs
+# =========================
+logs/
+analysis_results/*.csv
+analysis_results/*.xlsx
+
+# =========================
+# Large / raw data files
+# =========================
+# *.csv
+# *.xlsx
+# *.xls
+# *.parquet
