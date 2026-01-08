@@ -32,6 +32,14 @@ from .allocation_utils import (
     map_factor_to_asset_weights,
     hrp_allocate_recursive_bisect,
 )
+from .monte_carlo import (
+    MonteCarloSimulator,
+    MonteCarloResult,
+    StrategyRobustnessValidator,
+    plot_monte_carlo_results,
+    plot_equity_curve_fan,
+    generate_summary_report,
+)
 
 __all__ = [
     # performance
@@ -48,4 +56,7 @@ __all__ = [
     # allocation
     'to_daily_rebalance_dates', 'choose_num_factors', 'get_risk_contributions_daily',
     'solve_risk_parity_weights', 'map_factor_to_asset_weights', 'hrp_allocate_recursive_bisect',
+    # monte carlo
+    'MonteCarloSimulator', 'MonteCarloResult', 'StrategyRobustnessValidator',
+    'plot_monte_carlo_results', 'plot_equity_curve_fan', 'generate_summary_report',
 ]
