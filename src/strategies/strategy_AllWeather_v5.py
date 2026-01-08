@@ -25,7 +25,7 @@
 
 
 3. 最终权重穿透：
-   由于资产在不同象限间存在重叠（如股票既在增长+也在通胀-），
+   由于资产在不同象限间存在重叠（如股票既在增长+也在通胀-）
    最终权重为各象限分配权重的叠加。
 """
 
@@ -36,6 +36,14 @@ from typing import Optional, Sequence, Dict, List
 from scipy.optimize import minimize
 import matplotlib.pyplot as plt
 import os
+
+import sys
+from pathlib import Path
+
+# 设置根目录，确保可以导入 framework 包
+ROOT = Path(__file__).resolve().parents[1].parent  # repo root (从 strategies -> src -> repo root)
+sys.path.insert(0, str(ROOT / 'src'))
+
 
 from framework.config import (
     TRADING_DAYS_PER_YEAR_SCALAR,

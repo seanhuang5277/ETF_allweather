@@ -12,14 +12,14 @@
 """
 
 from __future__ import annotations
-import os
 import sys
 import time
 import math
 import random
+from pathlib import Path
+from datetime import datetime
 import pandas as pd
 import numpy as np
-from datetime import datetime
 
 # ---- WindPy ----
 try:
@@ -33,20 +33,20 @@ START_DATE = '2005-01-01'
 END_DATE = datetime.today().strftime('%Y-%m-%d')
 BATCH_SIZE = 20  # EDB 每次请求的代码数量
 
-# 路径设置
-try:
-    ROOT = os.path.dirname(os.path.abspath(__file__))
-except NameError:
-    ROOT = os.getcwd()
+# 新增：导出模式和休眠设置
+EXPORT_MODE = 'incr'  # 'full' = 全量导出, 'incr' = 增量导出
+SLEEP_SEC = 0.8  # 每次请求后休眠秒数
 
-DATA_DIR = os.path.join(ROOT, 'data')
-CONFIG_DIR = os.path.join(ROOT, 'config')
-CONFIG_FILE = os.path.join(CONFIG_DIR, 'config_macro_factor.csv')
-CONFIG_MIMICKING_FILE = os.path.join(CONFIG_DIR, 'config_factor_mimicking.csv')
-OUTPUT_FILE = os.path.join(DATA_DIR, 'macro_factors_raw.csv')
-OUTPUT_MIMICKING_FILE = os.path.join(DATA_DIR, 'macro_factors_mimicking_raw.csv')
+# 路径设置 (Pathlib)
+ROOT = Path(__file__).resolve().parents[2]  # 项目根目录 ETF_allweather/
+DATA_DIR = ROOT / 'data'
+CONFIG_DIR = ROOT / 'config'
+CONFIG_FILE = CONFIG_DIR / 'config_macro_factor.csv'
+CONFIG_MIMICKING_FILE = CONFIG_DIR / 'config_factor_mimicking.csv'
+OUTPUT_FILE = DATA_DIR / 'macro_factors_raw.csv'
+OUTPUT_MIMICKING_FILE = DATA_DIR / 'macro_factors_mimicking_raw.csv'
 
-os.makedirs(DATA_DIR, exist_ok=True)
+DATA_DIR.mkdir(exist_ok=True)
 
 
 def ensure_wind():
@@ -62,9 +62,9 @@ def ensure_wind():
     print("Wind API 连接成功。")
 
 
-def load_config(config_path: str) -> pd.DataFrame:
+def load_config(config_path: Path) -> pd.DataFrame:
     """读取配置文件"""
-    if not os.path.exists(config_path):
+    if not config_path.exists():
         print(f"错误: 找不到配置文件 {config_path}")
         sys.exit(1)
         
@@ -89,7 +89,7 @@ def load_config(config_path: str) -> pd.DataFrame:
         # 过滤无效行
         df = df[df['code'] != 'nan']
         
-        print(f"成功读取配置 {os.path.basename(config_path)}，共 {len(df)} 个指标。")
+        print(f"成功读取配置 {config_path.name}，共 {len(df)} 个指标。")
         return df
         
     except Exception as e:
@@ -178,9 +178,20 @@ def main():
 
     w.stop()
 
-def run_export_task(config_path, output_path):
+def run_export_task(config_path: Path, output_path: Path):
     print(f"Loading config from: {config_path}")
     df_config = load_config(config_path)
+    
+    # 增量模式：读取现有文件，计算起始日期
+    existing_df = None
+    actual_start = START_DATE
+    print(f"\n导出模式: {'全量' if EXPORT_MODE == 'full' else '增量'} | 休眠: {SLEEP_SEC}s")
+    
+    if EXPORT_MODE == 'incr' and output_path.exists():
+        existing_df = pd.read_csv(output_path, index_col=0, parse_dates=True)
+        last_dt = pd.to_datetime(existing_df.index.max())
+        actual_start = (last_dt - pd.Timedelta(days=7)).strftime('%Y-%m-%d')  # 回填7天
+        print(f"增量模式：从 {actual_start} 开始（现有 {len(existing_df)} 行）")
     
     # 1. 分类 API
     edb_rows = df_config[df_config['api'] == 'edb']
@@ -205,7 +216,7 @@ def run_export_task(config_path, output_path):
             print(f"  > Fetching batch {i//BATCH_SIZE + 1}/{math.ceil(total_edb/BATCH_SIZE)}: {len(batch_codes)} codes")
             
             try:
-                df_batch = edb_fetch_batch(batch_codes, START_DATE, END_DATE)
+                df_batch = edb_fetch_batch(batch_codes, actual_start, END_DATE)
                 if not df_batch.empty:
                     # 重命名列为中文名称
                     # 注意：Wind 返回的列名可能是大写，需要不区分大小写匹配
@@ -230,7 +241,7 @@ def run_export_task(config_path, output_path):
             except Exception as e:
                 print(f"  [Error] Batch failed: {e}")
             
-            time.sleep(random.uniform(0.5, 1.0))
+            time.sleep(random.uniform(SLEEP_SEC * 0.8, SLEEP_SEC * 1.2))
 
     # --- 处理 WSD ---
     if not wsd_rows.empty:
@@ -242,14 +253,14 @@ def run_export_task(config_path, output_path):
             
             print(f"  > Fetching {code} ({name})...")
             try:
-                s = wsd_fetch_single(code, START_DATE, END_DATE, field)
+                s = wsd_fetch_single(code, actual_start, END_DATE, field)
                 if s is not None:
                     s.name = name
                     all_series_list.append(s)
             except Exception as e:
                 print(f"  [Error] Failed {code}: {e}")
             
-            time.sleep(random.uniform(0.2, 0.5))
+            time.sleep(random.uniform(SLEEP_SEC * 0.5, SLEEP_SEC * 0.8))
 
     # 3. 合并数据
     if not all_series_list:
@@ -260,10 +271,9 @@ def run_export_task(config_path, output_path):
     # 使用 outer join 合并所有序列
     full_df = pd.concat(all_series_list, axis=1).sort_index()
     
-    # 4. 数据清洗与填充
-    # 宏观数据通常频率不一（日、周、月），为了对齐，通常采用前向填充 (ffill)
-    # 这样月度数据在当月每一天都有值，方便日度回测调用
-    # full_df = full_df.ffill()
+    # 4. 增量模式：合并新旧数据
+    if EXPORT_MODE == 'incr' and existing_df is not None:
+        full_df = full_df.combine_first(existing_df)
     
     # 截取时间段
     full_df = full_df[START_DATE:END_DATE]

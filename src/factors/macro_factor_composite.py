@@ -31,22 +31,35 @@
 """
 
 import os
+import sys
+import io
+from pathlib import Path
+
+# 设置标准输出编码为 UTF-8（解决 VS Code 中文乱码）
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
 # --- 路径配置 ---
-try:
-    ROOT = os.path.dirname(os.path.abspath(__file__))
-except NameError:
-    ROOT = os.getcwd()
+ROOT = Path(__file__).resolve().parents[2]  # src/factors -> src -> 项目根目录
 
-DATA_DIR = os.path.join(ROOT, 'data')
-OUTPUT_ALL_FACTORS_FILE = os.path.join(DATA_DIR, 'all_macro_factors.csv')
-PLOT_DIR = os.path.join(DATA_DIR, 'plots', 'macro_factors')
+# 确保 sys.path 包含根目录和 src 目录，支持 VS Code 直接运行
+root_str = str(ROOT)
+src_str = str(ROOT / 'src')
+if root_str not in sys.path:
+    sys.path.insert(0, root_str)
+if src_str not in sys.path:
+    sys.path.insert(0, src_str)
+
+DATA_DIR = ROOT / 'data'
+OUTPUT_ALL_FACTORS_FILE = DATA_DIR / 'all_macro_factors.csv'
+PLOT_DIR = DATA_DIR / 'plots' / 'macro_factors'
 
 # 确保目录存在
-os.makedirs(PLOT_DIR, exist_ok=True)
+PLOT_DIR.mkdir(parents=True, exist_ok=True)
 
 # Matplotlib 中文配置
 plt.rcParams['font.sans-serif'] = ['SimHei']

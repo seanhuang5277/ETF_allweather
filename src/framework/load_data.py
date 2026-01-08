@@ -69,10 +69,10 @@ def load_etf_index_returns_by_category(
     idx_all = _to_numeric_df(idx_all).sort_index()
 
     # 读取配置
-
+    from pathlib import Path
     # 默认相对工程根目录的 config 路径
-    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    config_csv = os.path.join(root, 'config', 'config_export_etf_and_index_rawdata.csv')
+    root = Path(__file__).resolve().parents[2]  # framework -> src -> repo root
+    config_csv = root / 'config' / 'config_export_etf_and_index_rawdata.csv'
     if not os.path.isfile(config_csv):
         raise FileNotFoundError(f"未找到配置文件: {config_csv}")
     cfg = _read_csv_robust(config_csv)
