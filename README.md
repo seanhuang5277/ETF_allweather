@@ -192,7 +192,7 @@ The strategy follows a **top-down investment process** with a three-layer weight
 
 ## ⚙️ Configuration / 配置说明
 
-Key parameters in `strategy_AllWeather_v5.py`:
+Key parameters in `strategy_AllWeather.py`:
 
 ```python
 # Strategy Parameters / 策略参数
