@@ -165,7 +165,7 @@ The strategy follows a **top-down investment process** with a three-layer weight
 | **CAGR (年化复合收益)** | 8.34% |
 | **Annual Volatility (年化波动率)** | 5.09% |
 | **Sharpe Ratio (夏普比率)** | 1.21 |
-| **Calmar Ratio** | 1.39 |
+| **Calmar Ratio (卡尔玛比率)** | 1.39 |
 | **Sortino Ratio (索提诺比率)** | 1.67 |
 | **Max Drawdown (最大回撤)** | -6.01% |
 | **Max DD Period** | 2020-02-24 ~ 2020-03-19 |
