@@ -177,16 +177,16 @@ The strategy follows a **top-down investment process** with a three-layer weight
 
 ### Equity Curve / 净值曲线
 
-![Equity Curve](results/strategies/plot/equity_curve.png)
+![Equity Curve](ETF_allweather/results/strategies/plot/equity_curve.png)
 ![Equity Curve](https://raw.githubusercontent.com/seanhuang5277/ETF_allweather/main/results/strategies/plot/equity_curve.png)
 
 ### Drawdown Analysis / 回撤分析
 
-![Drawdown Analysis](results/strategies/plot/Drawdown_analysis.png)
+![Drawdown Analysis](ETF_allweather/results/strategies/plot/Drawdown_analysis.png)
 
 ### Robust Analysis / 稳健性分析
 
-![Drawdown Analysis](results/strategies/plot/Drawdown_analysis.png)
+![Drawdown Analysis](ETF_allweather/results/strategies/plot/Drawdown_analysis.png)
 
 ---
 
