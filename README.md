@@ -146,6 +146,18 @@ The strategy follows a **top-down investment process** with a three-layer weight
 
 ## 📊 Backtest Results / 回测表现
 
+### Equity Curve / 净值曲线
+
+![Equity Curve](/results/strategies/plot/equity_curve.png)
+
+### Drawdown Analysis / 回撤分析
+
+![Drawdown Analysis](results/strategies/plot/Drawdown_analysis.png)
+
+### Robust Analysis / 稳健性分析
+
+![Drawdown Analysis](/results/monte_carlo/param_heatmap.png)
+
 ### Performance Metrics / 绩效指标
 
 | Metric | Value |
@@ -173,17 +185,8 @@ The strategy follows a **top-down investment process** with a three-layer weight
 | 2024 | 10.26% |
 | 2025 | 11.70% |
 
-### Equity Curve / 净值曲线
 
-![Equity Curve](/results/strategies/plot/equity_curve.png)
 
-### Drawdown Analysis / 回撤分析
-
-![Drawdown Analysis](results/strategies/plot/Drawdown_analysis.png)
-
-### Robust Analysis / 稳健性分析
-
-![Drawdown Analysis](/ETF_allweather/results/strategies/plot/Drawdown_analysis.png)
 
 ---
 
