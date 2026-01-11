@@ -186,7 +186,7 @@ The strategy follows a **top-down investment process** with a three-layer weight
 
 ### Robust Analysis / 稳健性分析
 
-![Drawdown Analysis](ETF_allweather/results/strategies/plot/Drawdown_analysis.png)
+![Drawdown Analysis](/ETF_allweather/results/strategies/plot/Drawdown_analysis.png)
 
 ---
 
