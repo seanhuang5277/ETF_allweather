@@ -216,8 +216,8 @@ min_position = 0.8               # 最小仓位
 
 - [ ] Add more asset classes (REITs, Overseas ETFs)
 - [ ] Implement Black-Litterman model for return forecasting
+- [ ] Implement more macro or industry factors for risk budget 
 - [ ] Add transaction cost optimization
-- [ ] Develop real-time signal generation pipeline
 
 ---
 
