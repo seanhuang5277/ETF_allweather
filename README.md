@@ -81,8 +81,68 @@ ETF_allweather/
 The strategy follows a **top-down investment process** with a three-layer weight penetration mechanism:
 
 策略采用**自上而下的投资流程**，通过三层权重穿透机制进行资产配置：
-
-
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    MACRO REGIME IDENTIFICATION                   │
+│                       宏观环境识别                                │
+│                                                                  │
+│   ┌──────────────┐  ┌──────────────┐  ┌──────────────┐         │
+│   │   Growth     │  │  Inflation   │  │  Monetary    │         │
+│   │   增长因子    │  │  通胀因子    │  │  货币政策    │          │
+│   └──────────────┘  └──────────────┘  └──────────────┘         │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    QUADRANT CLASSIFICATION                       │
+│                       四象限分类                                  │
+│                                                                  │
+│   ┌───────────────────────┬───────────────────────┐             │
+│   │    Growth Rising      │   Inflation Rising    │             │
+│   │    增长上行           │    通胀上行           │              │
+│   │                       │                       │             │
+│   │  Stock + Commodity    │  Commodity + Gold     │             │
+│   │  + Credit Bond        │                       │             │
+│   ├───────────────────────┼───────────────────────┤             │
+│   │    Growth Falling     │   Inflation Falling   │             │
+│   │    增长下行           │    通胀下行           │              │
+│   │                       │                       │             │
+│   │  Rates Bond + Gold    │  Dividend Stock       │             │
+│   │                       │  + Rates Bond         │             │
+│   └───────────────────────┴───────────────────────┘             │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│               THREE-LAYER WEIGHT PENETRATION                     │
+│                   三层权重穿透                                    │
+│                                                                  │
+│   Layer 1: ETF Layer (Bottom)                                   │
+│   第一层：ETF层（底层）                                           │
+│   → Equal Weight (EW) or Hierarchical Risk Parity (HRP)         │
+│                                                                  │
+│   Layer 2: Asset Class Layer (Middle)                           │
+│   第二层：资产类别层（中间层）                                      │
+│   → Adjustable weights within each quadrant                    │
+│                                                                  │
+│   Layer 3: Quadrant Layer (Top)                                 │
+│   第三层：象限层（顶层）                                           │
+│   → Risk Parity across four quadrants                           │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    TIMING ADJUSTMENTS                            │
+│                       择时调整                                    │
+│                                                                  │
+│   ┌──────────────────────┐  ┌──────────────────────┐           │
+│   │  Monetary Policy     │  │  ETF Flow Momentum   │           │
+│   │  Position Sizing     │  │  份额动量择时         │            │
+│   │  货币政策仓位调整     │  │  (Equity ETFs only)  │            │
+│   └──────────────────────┘  └──────────────────────┘           │
+└─────────────────────────────────────────────────────────────────┘
+```
 
 ## 📊 Backtest Results / 回测表现
 
