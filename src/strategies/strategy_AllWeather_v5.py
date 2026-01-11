@@ -70,7 +70,21 @@ from framework.allocation_utils import (
     solve_factor_risk_parity_weights,
 )
 from framework.logging_config import setup_logging, get_logger
-from framework.plotting import plot_equity_curve, plot_weights_history, plot_return_attribution, plot_multi_equity_curves
+from framework.plotting import (
+    # 原始风格绘图函数
+    plot_equity_curve, 
+    plot_weights_history, 
+    plot_return_attribution, 
+    plot_multi_equity_curves,
+    # 现代风格绘图函数 (与 Monte Carlo 一致)
+    plot_equity_curve_modern,
+    plot_weights_history_modern,
+    plot_return_attribution_modern,
+    plot_multi_equity_curves_modern,
+    plot_drawdown_modern,
+    plot_performance_summary_modern,
+)
+from framework.etf_flow_momentum import ETFFlowMomentumTimer, identify_stock_etf_columns
 # from framework.black_litterman import calculate_implied_returns, black_litterman_posterior, get_bl_weights
 
 # 初始化日志
@@ -295,6 +309,14 @@ def run_strategy_updated(
     use_monetary_position_sizing: bool = False,
     max_position: float = 1.0,
     min_position: float = 0.8,
+    
+    # ETF份额动量择时参数 (仅调整股票类ETF)
+    use_etf_flow_momentum: bool = False,
+    flow_lookback_months: int = 3,           # 计算资金流动量的回看月数
+    flow_signal_method: str = 'percentile',  # 信号方法: 'percentile', 'zscore', 'sign'
+    flow_max_overweight: float = 0.2,        # 最大超配比例 (如0.2表示最多超配20%)
+    flow_max_underweight: float = 0.2,       # 最大低配比例 (如0.2表示最多低配20%)
+    flow_signal_lookback: int = 12,          # 计算信号分位数的历史回看月数
 ) -> Dict[str, object]:
 
 
@@ -440,6 +462,31 @@ def run_strategy_updated(
             first_inc = all_idx_simp_df[idx_name].first_valid_index()
         if first_inc is not None:
             etf_inception[etf_name] = first_inc
+    
+    # 5.1 初始化ETF份额动量择时器（如果启用）
+    etf_flow_timer = None
+    if use_etf_flow_momentum:
+        try:
+            etf_flow_timer = ETFFlowMomentumTimer(
+                data_dir=data_dir,
+                lookback_months=flow_lookback_months,
+                signal_method=flow_signal_method,
+                max_overweight=flow_max_overweight,
+                max_underweight=flow_max_underweight,
+                lookback_for_signal=flow_signal_lookback,
+            )
+            if etf_flow_timer.is_valid:
+                logger.info(f"ETF份额动量择时器初始化成功: 回看{flow_lookback_months}月, 信号方法={flow_signal_method}")
+            else:
+                logger.warning("ETF份额动量择时器初始化失败，将跳过份额动量调整")
+                etf_flow_timer = None
+        except Exception as e:
+            logger.error(f"初始化ETF份额动量择时器失败: {e}")
+            etf_flow_timer = None
+    
+    # 识别股票类ETF（用于份额动量调整）
+    stock_etf_keywords = ['300ETF', '500ETF', '1000ETF', '50ETF', 'A500', '创业板', '科创', '红利']
+    stock_etf_list = identify_stock_etf_columns(list(all_etf_simp_df.columns), stock_etf_keywords)
 
     # 6.确定再平衡日期
     min_data_days_required = TRADING_DAYS_PER_YEAR_SCALAR * min_data_years
@@ -728,6 +775,23 @@ def run_strategy_updated(
         if current_atomic_w.sum() > 0:
             current_atomic_w = current_atomic_w / current_atomic_w.sum()
         
+        ## ETF份额动量调整（仅调整股票类ETF权重）
+        # ----------------------------------  使用资金流动量调整股票ETF权重  ----------------------------------------#
+        if etf_flow_timer is not None and etf_flow_timer.is_valid:
+            flow_adjustment = etf_flow_timer.get_weight_adjustment(dt)
+            flow_signal = etf_flow_timer.get_signal(dt)
+            
+            # 仅调整股票类ETF的权重
+            for etf_name in stock_etf_list:
+                if etf_name in current_atomic_w.index and current_atomic_w[etf_name] > 0:
+                    current_atomic_w[etf_name] *= flow_adjustment
+            
+            # 重新归一化
+            if current_atomic_w.sum() > 0:
+                current_atomic_w = current_atomic_w / current_atomic_w.sum()
+            
+            logger.debug(f"[{dt.date()}] ETF资金流信号={flow_signal:.3f}, 股票ETF权重调整={flow_adjustment:.3f}")
+        
         ## 货币政策仓位调整（在时间循环内）
         # ----------------------------------  使用DR007和短融ETF  ----------------------------------------#
         if use_monetary_position_sizing and macro_factor_df is not None:
@@ -877,6 +941,11 @@ def run_strategy_updated(
         cost_per_side=cost_per_side
     )
 
+    # 收集ETF资金流数据（如果启用）
+    etf_flow_data = None
+    if etf_flow_timer is not None and etf_flow_timer.is_valid:
+        etf_flow_data = etf_flow_timer.get_flow_data()
+    
     return {
         'performance_report': report,
         'equity_curve_series': equity_curve_series,
@@ -888,6 +957,7 @@ def run_strategy_updated(
         'rebalance_returns': rebalance_returns,
         'quadrant_equity_curves': quadrant_equity_curves,
         'class_equity_curves': class_equity_curves,
+        'etf_flow_data': etf_flow_data,  # ETF资金流数据
     }
 
 
@@ -911,6 +981,13 @@ if __name__ == "__main__":
         bottom_cov_estimate_ways='cov',  # 底层（ETF间）
         ewm_span_days=252,
         use_factor_balance = False,  # 使用因子风险平价
+        # ETF份额动量择时参数
+        use_etf_flow_momentum=True,  # 启用ETF份额动量择时
+        flow_lookback_months=3,       # 回看3个月的资金流
+        flow_signal_method='percentile',  # 使用分位数信号
+        flow_max_overweight=0.2,      # 资金流入时最多超配20%
+        flow_max_underweight=0.2,     # 资金流出时最多低配20%
+        flow_signal_lookback=12,      # 使用12个月历史计算分位数
     )
     
     # 打印性能指标
@@ -927,14 +1004,34 @@ if __name__ == "__main__":
         except Exception:
             logger.info(f"  {k}: {v}")
     
-    # 绘制图表（在run_strategy外部）
-    fig1 = plot_equity_curve(res['equity_curve_series'], res['performance_report'], STRATEGY_MODE, 
-                            rebalance_returns=res['rebalance_returns'], auto_show=False)
-    fig2 = plot_weights_history(res['top_quadrant_for_plot'], "Quadrant Allocation", reverse_legend=True, auto_show=False)
-    fig3 = plot_weights_history(res['daily_weights_df'], "Asset Allocation", reverse_legend=True, auto_show=False)
-    fig4 = plot_return_attribution(res['atomic_attribution'], title="底层资产收益贡献", auto_show=False)
-    fig5 = plot_multi_equity_curves(res['quadrant_equity_curves'], title="四象限净值曲线对比", auto_show=False)
-    fig6 = plot_multi_equity_curves(res['class_equity_curves'], title="资产类别净值曲线对比", auto_show=False)
+    # =========================================================================
+    # 绘图风格选择: 'original' 或 'modern'
+    # - 'original': 原始风格
+    # - 'modern': 现代简洁风格 (与 Monte Carlo 模块一致)
+    # =========================================================================
+    PLOT_STYLE = 'modern'  # 切换绘图风格
+    
+    if PLOT_STYLE == 'modern':
+        # 现代风格绘图 (与 Monte Carlo 一致)
+        fig1 = plot_equity_curve_modern(res['equity_curve_series'], res['performance_report'], STRATEGY_MODE, rebalance_returns=res['rebalance_returns'], auto_show=False)
+        fig2 = plot_weights_history_modern(res['top_quadrant_for_plot'], title="象限配置历史 (Quadrant Allocation)", auto_show=False)
+        fig3 = plot_weights_history_modern(res['daily_weights_df'], title="资产配置历史 (Asset Allocation)", auto_show=False)
+        fig4 = plot_return_attribution_modern(res['atomic_attribution'], title="底层资产收益归因", top_n=15, auto_show=False)
+        fig5 = plot_multi_equity_curves_modern(res['quadrant_equity_curves'], title="四象限净值曲线对比", auto_show=False)
+        fig6 = plot_multi_equity_curves_modern(res['class_equity_curves'], title="资产类别净值曲线对比", auto_show=False)
+        # 额外图表：回撤分析
+        fig7 = plot_drawdown_modern(res['equity_curve_series'], title="策略回撤分析", auto_show=False)
+        # 额外图表：绩效摘要
+        fig8 = plot_performance_summary_modern(res['performance_report'], title="策略绩效摘要", auto_show=False)
+    else:
+        # 原始风格绘图
+        fig1 = plot_equity_curve(res['equity_curve_series'], res['performance_report'], STRATEGY_MODE, 
+                                rebalance_returns=res['rebalance_returns'], auto_show=False)
+        fig2 = plot_weights_history(res['top_quadrant_for_plot'], "Quadrant Allocation", reverse_legend=True, auto_show=False)
+        fig3 = plot_weights_history(res['daily_weights_df'], "Asset Allocation", reverse_legend=True, auto_show=False)
+        fig4 = plot_return_attribution(res['atomic_attribution'], title="底层资产收益贡献", auto_show=False)
+        fig5 = plot_multi_equity_curves(res['quadrant_equity_curves'], title="四象限净值曲线对比", auto_show=False)
+        fig6 = plot_multi_equity_curves(res['class_equity_curves'], title="资产类别净值曲线对比", auto_show=False)
     
     # 显示所有图表
     plt.show()

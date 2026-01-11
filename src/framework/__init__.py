@@ -12,6 +12,18 @@ from .plotting import (
     plot_equity_curve,
     plot_weights_history,
     show_all_block,
+    plot_multi_equity_curves,
+    plot_return_attribution,
+    # 现代风格绘图函数
+    plot_equity_curve_modern,
+    plot_multi_equity_curves_modern,
+    plot_weights_history_modern,
+    plot_return_attribution_modern,
+    plot_drawdown_modern,
+    plot_performance_summary_modern,
+    plot_rolling_metrics_modern,
+    MODERN_COLORS,
+    MODERN_PALETTE,
 )
 from .logging_config import setup_logging, get_logger
 from .config import (
@@ -40,12 +52,27 @@ from .monte_carlo import (
     plot_equity_curve_fan,
     generate_summary_report,
 )
+from .etf_flow_momentum import (
+    ETFFlowMomentumTimer,
+    load_etf_aum_data,
+    calculate_flow_driven_aum_change,
+    calculate_stock_etf_aggregate_flow,
+    get_flow_momentum_signal,
+    get_stock_etf_weight_adjustment,
+    identify_stock_etf_columns,
+)
 
 __all__ = [
     # performance
     'compute_portfolio_returns_and_equity', 'calculate_performance_metrics',
-    # plotting
+    # plotting - original
     'plot_equity_curve', 'plot_weights_history', 'show_all_block',
+    'plot_multi_equity_curves', 'plot_return_attribution',
+    # plotting - modern style
+    'plot_equity_curve_modern', 'plot_multi_equity_curves_modern',
+    'plot_weights_history_modern', 'plot_return_attribution_modern',
+    'plot_drawdown_modern', 'plot_performance_summary_modern', 'plot_rolling_metrics_modern',
+    'MODERN_COLORS', 'MODERN_PALETTE',
     # logging
     'setup_logging', 'get_logger',
     # config
@@ -59,4 +86,8 @@ __all__ = [
     # monte carlo
     'MonteCarloSimulator', 'MonteCarloResult', 'StrategyRobustnessValidator',
     'plot_monte_carlo_results', 'plot_equity_curve_fan', 'generate_summary_report',
+    # etf flow momentum
+    'ETFFlowMomentumTimer', 'load_etf_aum_data', 'calculate_flow_driven_aum_change',
+    'calculate_stock_etf_aggregate_flow', 'get_flow_momentum_signal',
+    'get_stock_etf_weight_adjustment', 'identify_stock_etf_columns',
 ]
