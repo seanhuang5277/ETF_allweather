@@ -33,29 +33,28 @@
        - 对结果画条形图。
 """
 
-import os
+from pathlib import Path
 import pandas as pd
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 import statsmodels.api as sm
 
-# --- 路径配置 ---
+# --- 路径配置 (使用 pathlib) ---
 try:
-    ROOT = os.path.dirname(os.path.abspath(__file__))
+    ROOT = Path(__file__).resolve().parents[2]  # src/factors -> src -> 项目根目录
 except NameError:
-    ROOT = os.getcwd()
+    ROOT = Path.cwd()
 
-DATA_DIR = os.path.join(ROOT, 'data')
-OUTPUT_DIR = os.path.join(ROOT, 'analysis_results')
+DATA_DIR = ROOT / 'data'
+OUTPUT_DIR = ROOT / 'results'/ 'factors'
 
-if not os.path.exists(OUTPUT_DIR):
-    os.makedirs(OUTPUT_DIR)
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-INDEX_RETURNS_FILE = os.path.join(DATA_DIR, 'index_daily_simple_returns.csv')
-MACRO_FACTORS_FILE = os.path.join(DATA_DIR, 'all_macro_factors.csv')  # V2 版本因子
-SUB_FACTORS_FILE = os.path.join(DATA_DIR, 'all_macro_sub_factors.csv')
-MIMICKING_FACTORS_FILE = os.path.join(DATA_DIR, 'macro_factors_mimicking.csv')
+INDEX_RETURNS_FILE = DATA_DIR / 'index_daily_simple_returns.csv'
+MACRO_FACTORS_FILE = DATA_DIR / 'all_macro_factors.csv'  # V2 版本因子
+SUB_FACTORS_FILE = DATA_DIR / 'all_macro_sub_factors.csv'
+MIMICKING_FACTORS_FILE = DATA_DIR / 'macro_factors_mimicking.csv'
 
 # --- 绘图设置 ---
 plt.rcParams['font.sans-serif'] = ['SimHei']  # 正常显示中文
@@ -164,24 +163,24 @@ def load_and_process_data():
     print("正在加载数据...")
     
     # 1. 加载指数日频收益率
-    if not os.path.exists(INDEX_RETURNS_FILE):
+    if not INDEX_RETURNS_FILE.exists():
         raise FileNotFoundError(f"找不到文件: {INDEX_RETURNS_FILE}")
     
     df_daily_ret = pd.read_csv(INDEX_RETURNS_FILE, index_col=0, parse_dates=True)
     
     # 2. 加载宏观因子 (V2 版本: 月频 Level + Change)
-    if not os.path.exists(MACRO_FACTORS_FILE):
+    if not MACRO_FACTORS_FILE.exists():
         raise FileNotFoundError(f"找不到文件: {MACRO_FACTORS_FILE}")
     
     df_monthly_factors = pd.read_csv(MACRO_FACTORS_FILE, index_col=0, parse_dates=True)
 
     # 3. Load sub-factors (if exists)
-    if not os.path.exists(SUB_FACTORS_FILE):
+    if not SUB_FACTORS_FILE.exists():
         raise FileNotFoundError(f"找不到文件: {SUB_FACTORS_FILE}")
     df_monthly_sub_factors = pd.read_csv(SUB_FACTORS_FILE, index_col=0, parse_dates=True)
 
     # 4. Load MIMICKING-factors (if exists)
-    if not os.path.exists(MIMICKING_FACTORS_FILE):
+    if not MIMICKING_FACTORS_FILE.exists():
         raise FileNotFoundError(f"找不到文件: {MIMICKING_FACTORS_FILE}")
     df_monthly_mimicking_factors = pd.read_csv(MIMICKING_FACTORS_FILE, index_col=0, parse_dates=True)
 
@@ -248,8 +247,8 @@ def analyze_correlations_and_single_factor_regressions(returns, factors, T_shift
 
     # 保存
     suffix = f"_T+{T_shift}" if T_shift > 0 else ""
-    corr_file_pearson = os.path.join(OUTPUT_DIR, f'exposure_correlations_pearson{suffix}.csv')
-    corr_file_spearman = os.path.join(OUTPUT_DIR, f'exposure_correlations_spearman{suffix}.csv')
+    corr_file_pearson = OUTPUT_DIR / f'exposure_correlations_pearson{suffix}.csv'
+    corr_file_spearman = OUTPUT_DIR / f'exposure_correlations_spearman{suffix}.csv'
     correlations_pearson.to_csv(corr_file_pearson, encoding='utf-8-sig')
     correlations_spearman.to_csv(corr_file_spearman, encoding='utf-8-sig')
     print(f"Pearson 相关性矩阵已保存: {corr_file_pearson}")
@@ -261,13 +260,13 @@ def analyze_correlations_and_single_factor_regressions(returns, factors, T_shift
     title_suffix = f" (T+{T_shift})" if T_shift > 0 else ""
     plt.title(f'资产收益率与宏观因子的相关性 (Pearson){title_suffix}')
     plt.tight_layout()
-    plt.savefig(os.path.join(OUTPUT_DIR, f'exposure_heatmap_pearson{suffix}.png'))
+    plt.savefig(OUTPUT_DIR / f'exposure_heatmap_pearson{suffix}.png')
 
     fig_corr2 = plt.figure(figsize=(12, 10))
     sns.heatmap(correlations_spearman, annot=True, fmt='.2f', cmap='coolwarm', center=0)
     plt.title(f'资产收益率与宏观因子的相关性 (Spearman){title_suffix}')
     plt.tight_layout()
-    plt.savefig(os.path.join(OUTPUT_DIR, f'exposure_heatmap_spearman{suffix}.png'))
+    plt.savefig(OUTPUT_DIR / f'exposure_heatmap_spearman{suffix}.png')
 
 
     """
@@ -319,8 +318,8 @@ def analyze_correlations_and_single_factor_regressions(returns, factors, T_shift
                 continue
     
     suffix = f"_T+{T_shift}" if T_shift > 0 else ""
-    beta_file = os.path.join(OUTPUT_DIR, f'single_factor_betas{suffix}.csv')
-    t_file = os.path.join(OUTPUT_DIR, f'single_factor_tvalues{suffix}.csv')
+    beta_file = OUTPUT_DIR / f'single_factor_betas{suffix}.csv'
+    t_file = OUTPUT_DIR / f'single_factor_tvalues{suffix}.csv'
 
     beta_mat.to_csv(beta_file, encoding='utf-8-sig')
     t_mat.to_csv(t_file, encoding='utf-8-sig')
@@ -336,7 +335,7 @@ def analyze_correlations_and_single_factor_regressions(returns, factors, T_shift
     # title_suffix = f" (T+{T_shift})" if T_shift > 0 else ""
     # plt.title(f'单因子回归 Beta (F_t -> R_{{t+{T_shift}}}){title_suffix}')
     # plt.tight_layout()
-    # plt.savefig(os.path.join(OUTPUT_DIR, f'single_factor_beta_heatmap{suffix}.png'))
+    # plt.savefig(OUTPUT_DIR / f'single_factor_beta_heatmap{suffix}.png')
 
     
     # 画 t 值热力图
@@ -344,7 +343,7 @@ def analyze_correlations_and_single_factor_regressions(returns, factors, T_shift
     sns.heatmap(t_mat.astype(float), annot=True, cmap='coolwarm', center=0)
     plt.title(f'单因子回归 t 值 (F_t -> R_{{t+{T_shift}}}){title_suffix}')
     plt.tight_layout()
-    plt.savefig(os.path.join(OUTPUT_DIR, f'single_factor_tvalue_heatmap{suffix}.png'))
+    plt.savefig(OUTPUT_DIR / f'single_factor_tvalue_heatmap{suffix}.png')
 
 
     # 筛选：Pearson 相关系数 > 0.1 且 t-stat > 1.5（为包含负相关/负t，这里用绝对值）
@@ -367,7 +366,7 @@ def analyze_correlations_and_single_factor_regressions(returns, factors, T_shift
     if not screen_df.empty:
         print(screen_df[['Asset', 'Factor', 'PearsonCorr', 'Tstat']].head(100).to_string(index=False))
 
-    excel_path = os.path.join(OUTPUT_DIR, f'screen_pearson_corr_ge_0.1_tstat_ge_1.5{suffix}.xlsx')
+    excel_path = OUTPUT_DIR / f'screen_pearson_corr_ge_0.1_tstat_ge_1.5{suffix}.xlsx'
     try:
         with pd.ExcelWriter(excel_path, engine='openpyxl') as writer:
             screen_df[['Asset', 'Factor', 'PearsonCorr', 'Tstat']].to_excel(writer, sheet_name='screen', index=False)
@@ -395,9 +394,8 @@ def analyze_regimes(returns, factors, T_shift=1):
     """
     print(f"\n正在进行 Regime Analysis (Fixed-Bin Analysis), T_shift={T_shift}...")
     
-    regime_dir = os.path.join(OUTPUT_DIR, 'regime_analysis')
-    if not os.path.exists(regime_dir):
-        os.makedirs(regime_dir)
+    regime_dir = OUTPUT_DIR / 'regime_analysis'
+    regime_dir.mkdir(parents=True, exist_ok=True)
         
     # 准备收益率数据: T+shift
     # 如果 T_shift > 0, 我们需要将 returns 向前 shift (shift(-k)) 以对齐 T 时刻的因子
@@ -410,9 +408,8 @@ def analyze_regimes(returns, factors, T_shift=1):
 
     # 遍历所有因子和资产
     for factor_col in factors.columns:
-        factor_dir = os.path.join(regime_dir, factor_col)
-        if not os.path.exists(factor_dir):
-            os.makedirs(factor_dir)
+        factor_dir = regime_dir / factor_col
+        factor_dir.mkdir(parents=True, exist_ok=True)
         # 跳过非数值因子
         if not pd.api.types.is_numeric_dtype(factors[factor_col]):
             continue
@@ -492,7 +489,7 @@ def analyze_regimes(returns, factors, T_shift=1):
             safe_asset = asset_col.replace('/', '_').replace('\\', '_')
             safe_factor = factor_col.replace('/', '_')
             plt.tight_layout()
-            plt.savefig(os.path.join(factor_dir, f'{safe_factor}_vs_{safe_asset}.png'))
+            plt.savefig(factor_dir / f'{safe_factor}_vs_{safe_asset}.png')
             # plt.show()
             plt.close()
             
@@ -502,7 +499,7 @@ def analyze_regimes(returns, factors, T_shift=1):
     if summary_stats:
         df_summary = pd.DataFrame(summary_stats)
         
-        summary_file = os.path.join(OUTPUT_DIR, f'regime_stats_summary_T+{T_shift}.csv')
+        summary_file = OUTPUT_DIR / f'regime_stats_summary_T+{T_shift}.csv'
         df_summary.to_csv(summary_file, encoding='utf-8-sig', index=False)
         print(f"Regime Analysis 汇总表已保存: {summary_file}")
 
@@ -526,9 +523,8 @@ def analyze_two_factor_regression(
 
     print(f"\n[Two-Factor] 双因子回归: ({factor_x}, {factor_y}), T_shift={T_shift}")
 
-    out_dir = os.path.join(OUTPUT_DIR, 'two_factor_regression')
-    if not os.path.exists(out_dir):
-        os.makedirs(out_dir)
+    out_dir = OUTPUT_DIR / 'two_factor_regression'
+    out_dir.mkdir(parents=True, exist_ok=True)
 
     y_returns = returns.shift(-T_shift) if T_shift != 0 else returns
     X = factors[[factor_x, factor_y]].copy()
@@ -562,11 +558,11 @@ def analyze_two_factor_regression(
         resid_var.loc[asset] = getattr(model, 'mse_resid', np.nan)
 
     suffix = f"_T+{T_shift}" if T_shift > 0 else ""
-    beta_path = os.path.join(out_dir, f"two_factor_betas{suffix}.csv")
-    t_path = os.path.join(out_dir, f"two_factor_tvalues{suffix}.csv")
-    r2_path = os.path.join(out_dir, f"two_factor_r2{suffix}.csv")
-    nobs_path = os.path.join(out_dir, f"two_factor_nobs{suffix}.csv")
-    resid_path = os.path.join(out_dir, f"two_factor_resid_var{suffix}.csv")
+    beta_path = out_dir / f"two_factor_betas{suffix}.csv"
+    t_path = out_dir / f"two_factor_tvalues{suffix}.csv"
+    r2_path = out_dir / f"two_factor_r2{suffix}.csv"
+    nobs_path = out_dir / f"two_factor_nobs{suffix}.csv"
+    resid_path = out_dir / f"two_factor_resid_var{suffix}.csv"
     beta.to_csv(beta_path, encoding='utf-8-sig')
     tval.to_csv(t_path, encoding='utf-8-sig')
     r2.to_frame('R2').to_csv(r2_path, encoding='utf-8-sig')
@@ -586,14 +582,14 @@ def analyze_two_factor_regression(
     # sns.heatmap(beta.astype(float), annot=True, fmt='.3f', cmap='coolwarm', center=0)
     # plt.title(f"Two-Factor Betas: ({factor_x}, {factor_y}) -> R_(t+{T_shift})")
     # plt.tight_layout()
-    # plt.savefig(os.path.join(out_dir, f"two_factor_beta_heatmap{suffix}.png"))
+    # plt.savefig(out_dir / f"two_factor_beta_heatmap{suffix}.png")
     # # plt.close()
 
     plt.figure(figsize=(8, max(6, 0.25 * len(returns.columns))))
     sns.heatmap(tval.astype(float), annot=True, fmt='.2f', cmap='coolwarm', center=0)
     plt.title(f"Two-Factor t-stats: ({factor_x}, {factor_y}) -> R_(t+{T_shift})")
     plt.tight_layout()
-    plt.savefig(os.path.join(out_dir, f"two_factor_tvalue_heatmap{suffix}.png"))
+    plt.savefig(out_dir / f"two_factor_tvalue_heatmap{suffix}.png")
     # plt.close()
 
     # R2 条形图（辅助）
@@ -605,11 +601,11 @@ def analyze_two_factor_regression(
         plt.xlabel('R2')
         plt.ylabel('Asset')
         plt.tight_layout()
-        plt.savefig(os.path.join(out_dir, f"two_factor_r2_bar{suffix}.png"))
+        plt.savefig(out_dir / f"two_factor_r2_bar{suffix}.png")
         plt.show()
         # plt.close()
 
-    # Residual Std 条形图：宏观因子之外的“无法解释波动”
+    # Residual Std 条形图：宏观因子之外的"无法解释波动"
     resid_std_ann = (np.sqrt(resid_var) * np.sqrt(12.0)).dropna().sort_values(ascending=False)
     if not resid_std_ann.empty:
         plt.figure(figsize=(10, max(4, 0.25 * len(resid_std_ann))))
@@ -618,7 +614,7 @@ def analyze_two_factor_regression(
         plt.xlabel('Residual Std (ann.)')
         plt.ylabel('Asset')
         plt.tight_layout()
-        plt.savefig(os.path.join(out_dir, f"two_factor_resid_std_ann_bar{suffix}.png"))
+        plt.savefig(out_dir / f"two_factor_resid_std_ann_bar{suffix}.png")
         plt.show()
 
     return {
@@ -650,9 +646,8 @@ def analyze_three_factor_regression(
 
     print(f"\n[Three-Factor] 三因子回归: ({factor_x}, {factor_y}, {factor_z}), T_shift={T_shift}")
 
-    out_dir = os.path.join(OUTPUT_DIR, 'three_factor_regression')
-    if not os.path.exists(out_dir):
-        os.makedirs(out_dir)
+    out_dir = OUTPUT_DIR / 'three_factor_regression'
+    out_dir.mkdir(parents=True, exist_ok=True)
 
     y_returns = returns.shift(-T_shift) if T_shift != 0 else returns
     X = factors[[factor_x, factor_y, factor_z]].copy()
@@ -688,11 +683,11 @@ def analyze_three_factor_regression(
         resid_var.loc[asset] = getattr(model, 'mse_resid', np.nan)
 
     suffix = f"_T+{T_shift}" if T_shift > 0 else ""
-    beta_path = os.path.join(out_dir, f"three_factor_betas{suffix}.csv")
-    t_path = os.path.join(out_dir, f"three_factor_tvalues{suffix}.csv")
-    r2_path = os.path.join(out_dir, f"three_factor_r2{suffix}.csv")
-    nobs_path = os.path.join(out_dir, f"three_factor_nobs{suffix}.csv")
-    resid_path = os.path.join(out_dir, f"three_factor_resid_var{suffix}.csv")
+    beta_path = out_dir / f"three_factor_betas{suffix}.csv"
+    t_path = out_dir / f"three_factor_tvalues{suffix}.csv"
+    r2_path = out_dir / f"three_factor_r2{suffix}.csv"
+    nobs_path = out_dir / f"three_factor_nobs{suffix}.csv"
+    resid_path = out_dir / f"three_factor_resid_var{suffix}.csv"
     beta.to_csv(beta_path, encoding='utf-8-sig')
     tval.to_csv(t_path, encoding='utf-8-sig')
     r2.to_frame('R2').to_csv(r2_path, encoding='utf-8-sig')
@@ -710,16 +705,16 @@ def analyze_three_factor_regression(
     # # 图片：beta 与 t 值热力图
     # plt.figure(figsize=(8, max(6, 0.25 * len(returns.columns))))
     # sns.heatmap(beta.astype(float), annot=True, fmt='.3f', cmap='coolwarm', center=0)
-    # plt.title(f"Two-Factor Betas: ({factor_x}, {factor_y}) -> R_(t+{T_shift})")
+    # plt.title(f"Three-Factor Betas: ({factor_x}, {factor_y}, {factor_z}) -> R_(t+{T_shift})")
     # plt.tight_layout()
-    # plt.savefig(os.path.join(out_dir, f"two_factor_beta_heatmap{suffix}.png"))
+    # plt.savefig(out_dir / f"three_factor_beta_heatmap{suffix}.png")
     # # plt.close()
 
     plt.figure(figsize=(10, max(6, 0.25 * len(returns.columns))))
     sns.heatmap(tval.astype(float), annot=True, fmt='.2f', cmap='coolwarm', center=0)
     plt.title(f"Three-Factor t-stats: ({factor_x}, {factor_y}, {factor_z}) -> R_(t+{T_shift})")
     plt.tight_layout()
-    plt.savefig(os.path.join(out_dir, f"three_factor_tvalue_heatmap{suffix}.png"))
+    plt.savefig(out_dir / f"three_factor_tvalue_heatmap{suffix}.png")
     # plt.close()
 
     # R2 条形图（辅助）
@@ -731,7 +726,7 @@ def analyze_three_factor_regression(
         plt.xlabel('R2')
         plt.ylabel('Asset')
         plt.tight_layout()
-        plt.savefig(os.path.join(out_dir, f"three_factor_r2_bar{suffix}.png"))
+        plt.savefig(out_dir / f"three_factor_r2_bar{suffix}.png")
         plt.show()
         # plt.close()
 
@@ -743,7 +738,7 @@ def analyze_three_factor_regression(
         plt.xlabel('Residual Std (ann.)')
         plt.ylabel('Asset')
         plt.tight_layout()
-        plt.savefig(os.path.join(out_dir, f"three_factor_resid_std_ann_bar{suffix}.png"))
+        plt.savefig(out_dir / f"three_factor_resid_std_ann_bar{suffix}.png")
         plt.show()
 
     return {
@@ -777,9 +772,8 @@ def analyze_four_factor_regression(
 
     print(f"\n[Four-Factor] 四因子回归: ({factor_x}, {factor_y}, {factor_z}, {factor_w}), T_shift={T_shift}")
 
-    out_dir = os.path.join(OUTPUT_DIR, 'four_factor_regression')
-    if not os.path.exists(out_dir):
-        os.makedirs(out_dir)
+    out_dir = OUTPUT_DIR / 'four_factor_regression'
+    out_dir.mkdir(parents=True, exist_ok=True)
 
     y_returns = returns.shift(-T_shift) if T_shift != 0 else returns
     X = factors[[factor_x, factor_y, factor_z, factor_w]].copy()
@@ -812,11 +806,11 @@ def analyze_four_factor_regression(
         resid_var.loc[asset] = getattr(model, 'mse_resid', np.nan)
 
     suffix = f"_T+{T_shift}" if T_shift > 0 else ""
-    beta_path = os.path.join(out_dir, f"four_factor_betas{suffix}.csv")
-    t_path = os.path.join(out_dir, f"four_factor_tvalues{suffix}.csv")
-    r2_path = os.path.join(out_dir, f"four_factor_r2{suffix}.csv")
-    nobs_path = os.path.join(out_dir, f"four_factor_nobs{suffix}.csv")
-    resid_path = os.path.join(out_dir, f"four_factor_resid_var{suffix}.csv")
+    beta_path = out_dir / f"four_factor_betas{suffix}.csv"
+    t_path = out_dir / f"four_factor_tvalues{suffix}.csv"
+    r2_path = out_dir / f"four_factor_r2{suffix}.csv"
+    nobs_path = out_dir / f"four_factor_nobs{suffix}.csv"
+    resid_path = out_dir / f"four_factor_resid_var{suffix}.csv"
     beta.to_csv(beta_path, encoding='utf-8-sig')
     tval.to_csv(t_path, encoding='utf-8-sig')
     r2.to_frame('R2').to_csv(r2_path, encoding='utf-8-sig')
@@ -837,7 +831,7 @@ def analyze_four_factor_regression(
     sns.heatmap(tval.astype(float), annot=True, fmt='.2f', cmap='coolwarm', center=0)
     plt.title(f"Four-Factor t-stats -> R_(t+{T_shift})")
     plt.tight_layout()
-    plt.savefig(os.path.join(out_dir, f"four_factor_tvalue_heatmap{suffix}.png"))
+    plt.savefig(out_dir / f"four_factor_tvalue_heatmap{suffix}.png")
     # plt.close()
 
     r2_plot = r2.dropna().sort_values(ascending=False)
@@ -848,7 +842,7 @@ def analyze_four_factor_regression(
         plt.xlabel('R2')
         plt.ylabel('Asset')
         plt.tight_layout()
-        plt.savefig(os.path.join(out_dir, f"four_factor_r2_bar{suffix}.png"))
+        plt.savefig(out_dir / f"four_factor_r2_bar{suffix}.png")
         plt.show()
         # plt.close()
 
@@ -860,7 +854,7 @@ def analyze_four_factor_regression(
         plt.xlabel('Residual Std (ann.)')
         plt.ylabel('Asset')
         plt.tight_layout()
-        plt.savefig(os.path.join(out_dir, f"four_factor_resid_std_ann_bar{suffix}.png"))
+        plt.savefig(out_dir / f"four_factor_resid_std_ann_bar{suffix}.png")
         plt.show()
 
     return {
@@ -908,18 +902,18 @@ def main():
     # --- 双因子回归（默认：中国增长 + 中国通胀；可按需修改）---
 
     # 优先用 Change；如果你想用 Level，把下面两行改成 *_Level
-    factor_x_name = 'CN_Growth_Change'
-    factor_y_name = 'CN_Inflation_Change'
-    factor_z_name = 'CN_RiskAppetite_Change'
-    factor_w_name = 'CN_Monetary_Change'
+    # factor_x_name = 'CN_Growth_Change'
+    # factor_y_name = 'CN_Inflation_Change'
+    # factor_z_name = 'CN_RiskAppetite_Change'
+    # factor_w_name = 'CN_Monetary_Change'
 
     # analyze_two_factor_regression(returns,factors_change,factor_x=factor_x_name,factor_y=factor_y_name,T_shift=1)
     # analyze_three_factor_regression(returns,factors_change,factor_x=factor_w_name,factor_y=factor_y_name,factor_z=factor_z_name,T_shift=1)
     # analyze_four_factor_regression(returns,factors_change,factor_x=factor_x_name,factor_y=factor_y_name,factor_z=factor_z_name,factor_w=factor_w_name,T_shift=0)
-    analyze_regimes(returns, factors_level,  T_shift=2)
+    # analyze_regimes(returns, factors_level,  T_shift=2)
 
     
-    print("\n所有分析完成！结果保存在 analysis_results 文件夹中。")
+    print(f"\n所有分析完成！结果保存在 {OUTPUT_DIR} 文件夹中。" )
         
 
 
