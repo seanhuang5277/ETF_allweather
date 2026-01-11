@@ -177,21 +177,23 @@ The strategy follows a **top-down investment process** with a three-layer weight
 
 ### Equity Curve / 净值曲线
 
-![Equity Curve](results/strategies/plot/equity_curve.png)
+![Equity Curve](/results/strategies/plot/equity_curve.png)
+![Equity Curve](https://raw.githubusercontent.com/seanhuang5277/ETF_allweather/main/results/strategies/plot/equity_curve.png)
+<img width="2194" height="1129" alt="equity_curve" src="https://github.com/user-attachments/assets/3be05084-bca7-4330-9609-38163e5f7fed" />
 
 ### Drawdown Analysis / 回撤分析
 
-![Drawdown Analysis](results/strategies/plot/Drawdown_analysis.png)
+![Drawdown Analysis](ETF_allweather/results/strategies/plot/Drawdown_analysis.png)
 
 ### Robust Analysis / 稳健性分析
 
-![Drawdown Analysis](results/strategies/plot/Drawdown_analysis.png)
+![Drawdown Analysis](/ETF_allweather/results/strategies/plot/Drawdown_analysis.png)
 
 ---
 
 ## ⚙️ Configuration / 配置说明
 
-Key parameters in `strategy_AllWeather_v5.py`:
+Key parameters in `strategy_AllWeather.py`:
 
 ```python
 # Strategy Parameters / 策略参数
