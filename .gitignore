@@ -8,8 +8,10 @@ logs/
 # Logs & outputs
 # =========================
 logs/
-analysis_results/*.csv
-analysis_results/*.xlsx
+results/*.csv
+results/*.xlsx
+src/strategies/__pycache__/
+src/framework/__pycache__/
 
 # =========================
 # Large / raw data files
