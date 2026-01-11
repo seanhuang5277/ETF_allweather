@@ -81,7 +81,6 @@ ETF_allweather/
 The strategy follows a **top-down investment process** with a three-layer weight penetration mechanism:
 
 策略采用**自上而下的投资流程**，通过三层权重穿透机制进行资产配置：
-
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                    MACRO REGIME IDENTIFICATION                   │
@@ -143,10 +142,21 @@ The strategy follows a **top-down investment process** with a three-layer weight
 │   │  货币政策仓位调整     │  │  (Equity ETFs only)  │            │
 │   └──────────────────────┘  └──────────────────────┘           │
 └─────────────────────────────────────────────────────────────────┘
-
----
+```
 
 ## 📊 Backtest Results / 回测表现
+
+### Equity Curve / 净值曲线
+
+![Equity Curve](/results/strategies/plot/equity_curve.png)
+
+### Drawdown Analysis / 回撤分析
+
+![Drawdown Analysis](results/strategies/plot/Drawdown_analysis.png)
+
+### Robust Analysis / 稳健性分析
+
+![Drawdown Analysis](/results/monte_carlo/param_heatmap.png)
 
 ### Performance Metrics / 绩效指标
 
@@ -175,19 +185,8 @@ The strategy follows a **top-down investment process** with a three-layer weight
 | 2024 | 10.26% |
 | 2025 | 11.70% |
 
-### Equity Curve / 净值曲线
 
-![Equity Curve](/results/strategies/plot/equity_curve.png)
-![Equity Curve](https://raw.githubusercontent.com/seanhuang5277/ETF_allweather/main/results/strategies/plot/equity_curve.png)
-<img width="2194" height="1129" alt="equity_curve" src="https://github.com/user-attachments/assets/3be05084-bca7-4330-9609-38163e5f7fed" />
 
-### Drawdown Analysis / 回撤分析
-
-![Drawdown Analysis](ETF_allweather/results/strategies/plot/Drawdown_analysis.png)
-
-### Robust Analysis / 稳健性分析
-
-![Drawdown Analysis](/ETF_allweather/results/strategies/plot/Drawdown_analysis.png)
 
 ---
 
