@@ -42,7 +42,7 @@ from framework.logging_config import setup_logging, get_logger
 from framework.load_data import load_etf_index_returns_by_category
 
 # 导入策略函数
-from strategies.strategy_AllWeather_v5 import run_strategy_updated
+from strategies.strategy_AllWeather import run_strategy
 
 # 设置日志
 setup_logging(level="INFO", log_to_file=True, filename="logs/monte_carlo_validation.log")
@@ -105,7 +105,7 @@ def run_rolling_window_validation():
     base_params = get_base_strategy_params()
     
     validator = StrategyRobustnessValidator(
-        strategy_func=run_strategy_updated,
+        strategy_func=run_strategy,
         base_params=base_params,
         returns_df=returns_df,
         random_seed=42,
@@ -160,7 +160,7 @@ def run_random_date_validation():
     base_params = get_base_strategy_params()
     
     validator = StrategyRobustnessValidator(
-        strategy_func=run_strategy_updated,
+        strategy_func=run_strategy,
         base_params=base_params,
         returns_df=returns_df,
         random_seed=42,
@@ -213,7 +213,7 @@ def run_parameter_sensitivity_validation():
     base_params = get_base_strategy_params()
     
     validator = StrategyRobustnessValidator(
-        strategy_func=run_strategy_updated,
+        strategy_func=run_strategy,
         base_params=base_params,
         returns_df=returns_df,
         random_seed=42,

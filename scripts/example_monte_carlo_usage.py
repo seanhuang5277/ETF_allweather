@@ -29,7 +29,7 @@ def example_rolling_window():
     """
     from framework.monte_carlo import StrategyRobustnessValidator, plot_monte_carlo_results, generate_summary_report
     from framework.load_data import load_etf_index_returns_by_category
-    from strategies.strategy_AllWeather_v5 import run_strategy_updated
+    from strategies.strategy_AllWeather import run_strategy
     
     print("=" * 60)
     print("示例1: 滚动窗口测试")
@@ -53,7 +53,7 @@ def example_rolling_window():
     
     # 3. 创建验证器
     validator = StrategyRobustnessValidator(
-        strategy_func=run_strategy_updated,
+        strategy_func=run_strategy,
         base_params=base_params,
         returns_df=returns_df,
         random_seed=42,
@@ -88,7 +88,7 @@ def example_parameter_sensitivity():
     """
     from framework.monte_carlo import StrategyRobustnessValidator, plot_monte_carlo_results, generate_summary_report
     from framework.load_data import load_etf_index_returns_by_category
-    from strategies.strategy_AllWeather_v5 import run_strategy_updated
+    from strategies.strategy_AllWeather import run_strategy
     
     print("=" * 60)
     print("示例2: 参数敏感性分析")
@@ -108,7 +108,7 @@ def example_parameter_sensitivity():
     }
     
     validator = StrategyRobustnessValidator(
-        strategy_func=run_strategy_updated,
+        strategy_func=run_strategy,
         base_params=base_params,
         returns_df=returns_df,
     )

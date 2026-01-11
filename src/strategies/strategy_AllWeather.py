@@ -88,10 +88,10 @@ from framework.etf_flow_momentum import ETFFlowMomentumTimer, identify_stock_etf
 # from framework.black_litterman import calculate_implied_returns, black_litterman_posterior, get_bl_weights
 
 # 初始化日志
-setup_logging(level="INFO", log_to_file=True, filename="logs/strategy_AllWeather.log")
+setup_logging(level="INFO", log_to_file=True, filename="results/strategies/logs/strategy_AllWeather.log")
 logger = get_logger("strategy.AllWeather")
 
-STRATEGY_MODE = 'All_Weather_Quadrants'
+STRATEGY_MODE = 'All_Weather'
 
 
 def _to_month_end_simple_returns(daily_simple_ret_df: pd.DataFrame) -> pd.DataFrame:
@@ -267,7 +267,7 @@ def get_macro_adjusted_risk_budget(
     return budget_q
 
 
-def run_strategy_updated(
+def run_strategy(
     *,
     data_dir: str = 'data',
     start_date: Optional[str | pd.Timestamp] = None,
@@ -964,7 +964,7 @@ def run_strategy_updated(
 
 if __name__ == "__main__":
     # 示例运行
-    res = run_strategy_updated(
+    res = run_strategy(
         internal_method='EW', # 象限内使用 HRP 或者EW
         start_date="2018-11-30",
         end_date="2025-11-30",

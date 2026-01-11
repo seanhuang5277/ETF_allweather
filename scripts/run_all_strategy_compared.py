@@ -4,11 +4,17 @@ run_all_weather_bl.py
 
 Run All Weather strategy with and without Black-Litterman adjustment.
 """
+import sys
+from pathlib import Path
+# 设置根目录
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / 'src'))
 
 import matplotlib.pyplot as plt
-from strategy_AllWeather import run_strategy
-from strategy_AllWeather_v2 import run_strategy_updated
-from strategy_ThreeBasket import run_three_basket_strategy
+from strategies.strategy_AllWeather import run_strategy
+
+
+
 
 # 对比的共同参数
 internal_method='EW'
@@ -27,6 +33,7 @@ def main():
         # 下面是对比参数
         macro_factor_adjustment=False,
         use_monetary_position_sizing=False,  # 启用货币政策仓位调整
+        
         use_etf_real_data= use_etf_real_data
 
 
@@ -45,6 +52,7 @@ def main():
         use_monetary_position_sizing=True,  # 启用货币政策仓位调整
         max_position=1.0,  # 货币宽松时满仓
         min_position=0.8,  # 货币紧缩时80%仓位
+        use_etf_flow_momentum=True,  # 启用ETF份额动量择时
         use_etf_real_data= use_etf_real_data
     )
 
